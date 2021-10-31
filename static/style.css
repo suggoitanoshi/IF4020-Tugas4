@@ -1,0 +1,18 @@
+.enc-form{
+  display: flex;
+  flex-flow: row;
+}
+
+.row{
+  display: flex;
+  flex-flow: row;
+}
+
+.col{
+  display: flex;
+  flex-flow: column;
+}
+
+.grow-1{
+  flex-grow: 1;
+}

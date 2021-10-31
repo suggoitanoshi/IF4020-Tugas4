@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta name='viewport' content='width=device-width;initial-scale=1'>
+    <meta charset='utf-8'>
+    <title>Enkripsi/Dekripsi</title>
+    <link rel='stylesheet' href='{{url_for("static", filename="style.css")}}'>
+  </head>
+  <body>
+    <h1>Kalkulator Enkripsi/Dekripsi</h1>
+    <form class='enc-form col' id='encdecform'>
+      <label>Operasi:
+        <select id='op'>
+          <option value='enc'>Enkripsi</option>
+          <option value='dec'>Dekripsi</option>
+        </select>
+      </label>
+      <label>Algoritma:
+        <select id='alg'>
+          <option value='RSA'>RSA</option>
+          <option value='EG'>ElGamal</option>
+          <option value='Paillier'>Paillier</option>
+          <option value='ECC'>ECC</option>
+        </select>
+      </label>
+      <div class='row'>
+        <label for='message' class='col grow-1'>Message:
+          <textarea name='message' id='message'></textarea>
+          <input type='file' accept='*/*' id='message-file' multiple=false>
+        </label>
+        <label class='col grow-1'>Key:
+          <textarea name='key' id='key'></textarea>
+          <input type='file' accept='.pub,.pri,*/*' name='key-file' id='key-file' multiple=false>
+        </label>
+      </div>
+      <button id='submit'>Submit</button>
+    </form>
+    <a id='result' download='result' hidden>Result</a>
+    <script>
+      document.querySelector('#submit').addEventListener('click', async e => {
+        e.preventDefault();
+        const form = new FormData();
+        const messageFileDOM = document.querySelector('#message-file');
+        const messageDOM = document.querySelector('#message');
+        if(messageFileDOM.files[0]){
+          form.append('message', messageFileDOM.files[0]);
+          form.append('messagefile', true);
+        }
+        else if(messageDOM.value){
+          form.append('message', messageDOM.value);
+        }
+        else{
+          return;
+        }
+        const keyFileDOM = document.querySelector('#key-file');
+        const keyDOM = document.querySelector('#key');
+        if(keyFileDOM.files[0]){
+          form.append('key', keyFileDOM.files[0]);
+          form.append('keyfile', true);
+        }
+        else if(keyDOM.value){
+          form.append('key', keyDOM.value);
+        }
+        else{
+          return;
+        }
+        form.append('op', document.querySelector('#op').value)
+        form.append('alg', document.querySelector('#alg').value)
+        const result = await fetch('/encryptdecrypt', {
+          method: 'POST',
+          body: form
+        }).then(res => res.blob());
+        const resDOM = document.querySelector('#result');
+        resDOM.href = window.URL.createObjectURL(result);
+        resDOM.hidden = false;
+        document.querySelector('#encdecform').reset();
+      });
+    </script>
+  </body>
+</html>

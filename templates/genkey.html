@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta name='viewport' content='width=device-width;initial-scale=1'>
+    <meta charset='utf-8'>
+    <title>Enkripsi/Dekripsi</title>
+    <link rel='stylesheet' href='{{url_for("static", filename="style.css")}}'>
+  </head>
+  <body>
+    <h1>Kalkulator Enkripsi/Dekripsi</h1>
+    <form class='enc-form col'>
+      <label>Algoritma:
+        <select id='alg'>
+          <option value='RSA'>RSA</option>
+          <option value='EG'>ElGamal</option>
+          <option value='Paillier'>Paillier</option>
+          <option value='ECC'>ECC</option>
+        </select>
+      </label>
+      <label id='bits-display'>Jumlah bit:
+        <select id='bits'>
+        </select>
+      </label>
+      <button id='submit'>Submit</button>
+    </form>
+    <a id='pubkey' download='key.pub' hidden>Download Public Key</a>
+    <a id='prikey' download='key.pri' hidden>Download Private Key</a>
+    <script>
+      document.querySelector('#submit').addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector('#pubkey').hidden = false;
+        document.querySelector('#prikey').hidden = false;
+      });
+    </script>
+  </body>
+</html>
