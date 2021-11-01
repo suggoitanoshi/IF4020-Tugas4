@@ -33,3 +33,5 @@ def ed():
     key = request.files['key'].read()
   return alg
 
+if __name__ == "__main__":
+  app.run()
