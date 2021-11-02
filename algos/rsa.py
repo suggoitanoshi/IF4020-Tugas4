@@ -1,67 +1,77 @@
 from typing import Tuple
 import sympy
 import random
+import sys
+import math
 
-def genkey() -> Tuple[bytes, bytes]:
+
+def genkey(bitsize = 32) -> Tuple[dict[str, int], dict[str, int]]:
   """Generator kunci untuk RSA"""
   # size = ukuran p dan q dalam bits
   # Ukuran n adalah 2 * size
-  size = 32
+  size = bitsize
 
   # Bangkitkan p dan q
   p = generatePrime(size)
-  print("p   =",p)
   q = generatePrime(size)
-  print("q   =",q)
 
   while p == q:
     q = generatePrime(size)
-    print("q == p, generating q...")
-    print("q   =",q)
 
   n = p*q
-  print("n   =",n)
-
   phi = (p-1)*(q-1)
-  print("phi =",phi)
-
   e = randCoprime(phi)
-  print("e   =",e)
-
-  d = calcRSADecryptKey(phi, e)
-  print("d   =",d)
+  d = pow(e, -1, phi)
 
   # Buat kunci publik dan privat
   # Kunci publik = (e, n)
   # Kunci privat = (d, n)
-  publickey = (e, n)
-  privatekey = (d, n)
 
-  return publickey, privatekey
+  return ({'e': e, 'n': n}, {'d': d, 'n': n})
 
-def encrypt(message: bytes, pubkey: bytes) -> bytes:
+def encodekey(key: Tuple[dict[str, int], dict[str, int]]) -> Tuple[dict[str, str], dict[str, str]]:
+  pubkey, privkey = key
+  pubkey['e'] = hex(pubkey['e'])
+  pubkey['n'] = hex(pubkey['n'])
+  privkey['d'] = hex(privkey['d'])
+  privkey['n'] = hex(privkey['n'])
+  return (pubkey, privkey)
+
+def decodekey(key: dict[str, str]) -> dict[str,int]:
+  decoded = {}
+  for k in key.keys():
+    decoded[k] = int(key[k], 16)
+  return decoded 
+
+def encrypt(message: bytes, key: dict[str, int]) -> bytes:
   """Fungsi enkripsi untuk RSA"""
-  e = pubkey[0]
-  n = pubkey[1]
+  e = key['e']
+  n = key['n']
+  bsize = countBlock(n)
   msg = divideMessage(message, n)
-  cipher = []
+  c = bytearray()
   for i in range(0,len(msg)):
-    cipher.append(pow(msg[i],e,n))
-  # cipher = array of int
-  return cipher
+    a = pow(msg[i],e,n)
+    c.extend(a.to_bytes(bsize, byteorder=sys.byteorder, signed=False))
+  return c
 
-def decrypt(message: bytes, prikey: bytes) -> bytes:
+def decrypt(message: bytes, key: dict[str,int]) -> bytes:
   """Fungsi dekripsi untuk RSA"""
-  d = prikey[0]
-  n = prikey[1]
-  plaintext = []
-  # message = array of int
-  for i in range(0,len(message)):
-    plaintext.append(pow(message[i],d,n))
+  d = key['d']
+  n = key['n']
+  m = []
+  plain = bytearray()
+  bsize = countBlock(n)
+  for i in range(0, len(message), bsize):
+    a = int.from_bytes(message[i:i+bsize], byteorder=sys.byteorder, signed=False)
+    m.append(pow(a,d,n))
 
-  hasil = blockToMessage(plaintext, n)
+  return blockToMessage(m,n)
 
-  return hasil
+def countBlock(n):
+  res = math.ceil(math.log2(n)/8)
+
+  return res
 
 def blockToMessage(blockarray, n):
   # Mengubah pesan berupa blok angka kembali menjadi huruf
@@ -83,7 +93,8 @@ def blockToMessage(blockarray, n):
     temp = str(blockarray[i]).zfill(mult*lennum)
     temparr = [temp[j:j+lennum] for j in range(0, len(temp), lennum)]
     for k in temparr:
-      msg.append(int(k).to_bytes(1,'big'))
+      if k!= '000':
+       msg.append(int(k).to_bytes(1,'big'))
   return b''.join(msg)
 
 def divideMessage(message, n):
@@ -130,6 +141,12 @@ def gcd(a,b):
   else:
     return gcd(b, a%b)
 
+def egcd(a,b):
+  if a == 0:
+    return b, 0, 1
+  gcd, x, y = egcd(b%a, a)
+  return gcd, (y-(b//a)*x), x
+
 def randCoprime(x):
   # Pembangkit angka acak yang relatif prima dengan x
   # Syarat bilangan relatif prima adalah GCD == 1
@@ -138,14 +155,6 @@ def randCoprime(x):
     rand = random.randint(3, 65537)
 
   return rand
-
-def calcRSADecryptKey(phi, e):
-  # Menghitung nilai d berdasarkan n dan e
-  d = 1 + phi
-  while d%e!=0:
-    d = d + phi
-
-  return d
 
 # Testing
 # genkey()

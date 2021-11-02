@@ -20,6 +20,12 @@
       </label>
       <label id='bits-display'>Jumlah bit:
         <select id='bits'>
+          <option value="32">32</option>
+          <option value="64">64</option>
+          <option value="128">128</option>
+          <option value="256">256</option>
+          <option value="512">512</option>
+          <option value="1024">1024</option>
         </select>
       </label>
       <button id='submit'>Submit</button>
@@ -31,6 +37,7 @@
         e.preventDefault();
         const form = new FormData();
         form.append('alg', document.querySelector('#alg').value);
+        form.append('bits', document.querySelector('#bits').value);
         const response = await fetch('/generatekey', {
           method: 'POST',
           body: form

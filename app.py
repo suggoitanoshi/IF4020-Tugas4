@@ -16,10 +16,9 @@ def genkey_frontend():
 @app.post('/generatekey')
 def genkey():
   alg = request.form['alg']
+  bit = request.form['bits']
   if alg == 'RSA':
-    pubkey, privkey = rsa.genkey()
-    pubkey = hex(pubkey)
-    privkey = hex(privkey)
+    pubkey, privkey = rsa.encodekey(rsa.genkey(int(bit)))
   elif alg == 'EG':
     pubkey, privkey = eg.encodekey(eg.genkey())
   elif alg == 'Paillier':
@@ -43,8 +42,7 @@ def ed():
   except KeyError:
     key = request.files['key'].read()
   if alg == 'RSA':
-    key = int(key, 16)
-    key = key.to_bytes((key+7)//8, byteorder=sys.byteorder, signed=False)
+    key = rsa.decodekey(json.loads(key))
     if op == 'enc':
       return rsa.encrypt(msg, key)
     elif op == 'dec':
