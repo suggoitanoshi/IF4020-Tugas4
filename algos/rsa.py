@@ -93,8 +93,7 @@ def blockToMessage(blockarray, n):
     temp = str(blockarray[i]).zfill(mult*lennum)
     temparr = [temp[j:j+lennum] for j in range(0, len(temp), lennum)]
     for k in temparr:
-      if k!= '000':
-       msg.append(int(k).to_bytes(1,'big'))
+      msg.append(int(k).to_bytes(1,'big'))
   return b''.join(msg)
 
 def divideMessage(message, n):
@@ -140,12 +139,6 @@ def gcd(a,b):
     return a
   else:
     return gcd(b, a%b)
-
-def egcd(a,b):
-  if a == 0:
-    return b, 0, 1
-  gcd, x, y = egcd(b%a, a)
-  return gcd, (y-(b//a)*x), x
 
 def randCoprime(x):
   # Pembangkit angka acak yang relatif prima dengan x
