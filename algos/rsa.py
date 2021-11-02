@@ -1,4 +1,5 @@
 from typing import Tuple
+import sympy
 import random
 
 def genkey() -> Tuple[bytes, bytes]:
@@ -51,27 +52,42 @@ def decrypt(message: bytes, prikey: bytes) -> bytes:
   msg = divideMessage(message, n)
 
 def divideMessage(message, n):
-  # Memecah pesan menjadi beberapa blok sesuai n
-  pass
-
-def isPrime(x):
-  # Mengembalikan True jika x prima
-  if x % 2 == 0:
-    return False
-
-  i = 3
-  while i*i <= x:
-    if x%i == 0:
-      return False
-    i = i + 2
-  
-  return True
+  # Memecah pesan menjadi beberapa blok sesuai n (RSA) atau p (ElGamal)
+  maxnum = 255
+  lennum = len(str(maxnum))
+  lenn = len(str(n))
+  mult = lenn//lennum
+  temp = maxnum
+  for i in range(1, mult):
+    temp = temp * (10**lennum) + maxnum
+  if lenn % lennum == 0:
+    if n <= temp:
+      temp = temp // 1000
+      mult = mult - 1
+  msg = [x for x in message]
+  print('original:', msg)
+  msggroup = []
+  # Kelompokkan msg sesuai menjadi mult msg dalam 1 kelompok
+  if mult > 1:
+    i = 0
+    while i<len(msg):
+      grouped = ''
+      if i+mult < len(msg):
+        for j in range(i,i+mult):
+          grouped = grouped + str(msg[j]).zfill(lennum)
+      else:
+        for j in range(i,len(msg)):
+          grouped = grouped + str(msg[j]).zfill(lennum)
+        grouped = grouped.zfill(lennum*mult)
+      i = i + mult
+      msggroup.append(int(grouped))
+    return msggroup
+  else:
+    return msg
 
 def generatePrime(b):
   # Pembangkit angka prima sebesar b bits
-  rand = random.randint(2**(b-1), 2**(b)-1)
-  while isPrime(rand) == False:
-    rand = random.randint(2**(b-1), 2**(b)-1)
+  rand = sympy.randprime(2**(b-1), 2**(b)-1)
   return rand
 
 def gcd(a,b):
@@ -99,3 +115,4 @@ def calcRSADecryptKey(phi, e):
 
 # Testing
 # genkey()
+# print(divideMessage(str.encode("tehe contoh pesan"), 300000))
