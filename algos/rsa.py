@@ -44,12 +44,47 @@ def encrypt(message: bytes, pubkey: bytes) -> bytes:
   e = pubkey[0]
   n = pubkey[1]
   msg = divideMessage(message, n)
+  cipher = []
+  for i in range(0,len(msg)):
+    cipher.append(pow(msg[i],e,n))
+  # cipher = array of int
+  return cipher
 
 def decrypt(message: bytes, prikey: bytes) -> bytes:
   """Fungsi dekripsi untuk RSA"""
   d = prikey[0]
   n = prikey[1]
-  msg = divideMessage(message, n)
+  plaintext = []
+  # message = array of int
+  for i in range(0,len(message)):
+    plaintext.append(pow(message[i],d,n))
+
+  hasil = blockToMessage(plaintext, n)
+
+  return hasil
+
+def blockToMessage(blockarray, n):
+  # Mengubah pesan berupa blok angka kembali menjadi huruf
+  maxnum = 255
+  lennum = len(str(maxnum))
+  lenn = len(str(n))
+  mult = lenn//lennum
+  temp = maxnum
+  for i in range(1, mult):
+    temp = temp * (10**lennum) + maxnum
+  if lenn % lennum == 0:
+    if n <= temp:
+      temp = temp // 1000
+      mult = mult - 1
+
+  msg = []
+  # Pecah pesan mencadi 1 byte
+  for i in range(0,len(blockarray)):
+    temp = str(blockarray[i]).zfill(mult*lennum)
+    temparr = [temp[j:j+lennum] for j in range(0, len(temp), lennum)]
+    for k in temparr:
+      msg.append(int(k).to_bytes(1,'big'))
+  return b''.join(msg)
 
 def divideMessage(message, n):
   # Memecah pesan menjadi beberapa blok sesuai n (RSA) atau p (ElGamal)
@@ -65,7 +100,6 @@ def divideMessage(message, n):
       temp = temp // 1000
       mult = mult - 1
   msg = [x for x in message]
-  print('original:', msg)
   msggroup = []
   # Kelompokkan msg sesuai menjadi mult msg dalam 1 kelompok
   if mult > 1:
@@ -115,4 +149,7 @@ def calcRSADecryptKey(phi, e):
 
 # Testing
 # genkey()
-# print(divideMessage(str.encode("tehe contoh pesan"), 300000))
+# divided = divideMessage(str.encode("tehe contoh pesan"), 300000)
+# print(divided)
+# returned = blockToMessage(divided, 300000)
+# print(returned.decode('utf-8'))
