@@ -27,10 +27,20 @@
     <a id='pubkey' download='key.pub' hidden>Download Public Key</a>
     <a id='prikey' download='key.pri' hidden>Download Private Key</a>
     <script>
-      document.querySelector('#submit').addEventListener('click', e => {
+      document.querySelector('#submit').addEventListener('click', async e => {
         e.preventDefault();
-        document.querySelector('#pubkey').hidden = false;
-        document.querySelector('#prikey').hidden = false;
+        const form = new FormData();
+        form.append('alg', document.querySelector('#alg').value);
+        const response = await fetch('/generatekey', {
+          method: 'POST',
+          body: form
+        }).then(res => res.json())
+        const pubkeyDownload = document.querySelector('#pubkey');
+        const prikeyDownload = document.querySelector('#prikey');
+        pubkeyDownload.href = window.URL.createObjectURL(new Blob([JSON.stringify(response.pubkey)]));
+        prikeyDownload.href = window.URL.createObjectURL(new Blob([JSON.stringify(response.privkey)]));
+        pubkeyDownload.hidden = false;
+        prikeyDownload.hidden = false;
       });
     </script>
   </body>
