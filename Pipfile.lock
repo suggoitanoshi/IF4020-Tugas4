@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3e52d2d2a930c0d6428b8db637bd7cb2f1916bf9a11f6e9dd4c0b6a492ea1df3"
+            "sha256": "68f9c03d25c6e215efd1342f29ba101ab87c5e46b442b6ef7cf48b76597be985"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -145,6 +145,13 @@
             ],
             "index": "pypi",
             "version": "==1.9"
+        },
+        "tinyec": {
+            "hashes": [
+                "sha256:419ddfd55fca95e6e721db03c5d725a1c94eace2428dabebad85cb5210cf12ea"
+            ],
+            "index": "pypi",
+            "version": "==0.3.1"
         },
         "werkzeug": {
             "hashes": [

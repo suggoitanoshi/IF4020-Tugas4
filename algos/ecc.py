@@ -1,14 +1,15 @@
 from typing import Tuple
 import random
+import tinyec.ec as ec
+import tinyec.registry as reg
 
 def genkey() -> Tuple[dict[str, int], dict[str, int]]:
   """Fungsi pembangkit kunci ECC
      y^2 = x^3 + ax + b mod p"""
-  a = -1
-  b = 188
-  p = 751
-  privatekey = random.randint(1,p)
-  randompoint = pickBase(a,b,p)
+  c = reg.get_curve("secp192r1") # using a standard curve
+  privkey = random.randint(1,c.field.p)
+  pubkey = privkey * c.g
+  return ({'priv' : privkey, 'curvename':c.name}, {'x': pubkey.x, 'y':pubkey.y, 'curvename':c.name})
 
 def gety(a, b, p, x):
   # Hitung y jika diketahui a, b, p, x
@@ -42,12 +43,12 @@ def byteToPoint(m, k, a, b, p):
     x = x + 1
     y = gety(a, b, p, x)
 
-  return (x, y[0])
+  return (x, y[0]) # not ec.Point yet
 
 def pointToByte(point, k):
     # Kebalikan dari byteToPoint
     # point = (x, y)
-    x = point[0]
+    x = point.x
     return (x-1)//k
 
 def encodekey(key: Tuple[dict[str, int], dict[str, int]]) -> Tuple[dict[str, str], dict[str, str]]:
@@ -57,7 +58,36 @@ def decodekey(key: dict[str, str]) -> dict[str,int]:
   pass 
 
 def encrypt(message: bytes, key: dict[str, int]) -> bytes:
-  pass
+  # Algoritma Elliptic Curve Elgamal
+  x = key['x']
+  y = key['y']
+  cname = key['curvename']
+  c = reg.get_curve(cname)
+  pubkey = ec.Point(c,x,y)
+  kvalue = random.randint(1,c.field.p)
+
+  ciphertext = bytearray()
+
+  # Iterate Message
+  for x in message:
+    msg = byteToPoint(message, 1, c.a, c.b, c.field.p)
+    first = kvalue * c.g #1st point
+    second = msg + (kvalue * pubkey) #2nd point
+    cipherpoint = (first, second)
+    # ubah ke bytes?
+
 
 def decrypt(message: bytes, key: dict[str,int]) -> bytes:
-  pass
+  # Algoritma Elliptic Curve Elgamal
+  privkey = key['priv']
+  cname = key['curvename']
+  c = reg.get_curve(cname)
+  
+  # For every cipherpoint:
+  # first = cipherpoint[0] * privkey
+  # second = cipherpoint[1] - first
+
+  # Decode back to message
+  # ...
+
+
