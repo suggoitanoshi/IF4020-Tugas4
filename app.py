@@ -1,7 +1,7 @@
 import json
 import sys
 from flask import Flask,render_template,request
-from algos import rsa, eg, paillier
+from algos import rsa, eg, paillier, ecc
 
 app = Flask(__name__)
 
@@ -23,6 +23,8 @@ def genkey():
     pubkey, privkey = eg.encodekey(eg.genkey())
   elif alg == 'Paillier':
     pubkey, privkey = paillier.encodekey(paillier.genkey())
+  else:
+    pubkey, privkey = ecc.encodekey(ecc.genkey())
   return {'pubkey': pubkey, 'privkey': privkey}
 
 @app.get('/encryptdecrypt')
@@ -59,6 +61,12 @@ def ed():
       return paillier.encrypt(msg, key)
     elif op == 'dec':
       return paillier.decrypt(msg, key)
+  else:
+    key = ecc.decodekey(json.loads(key))
+    if op == 'enc':
+      return ecc.encrypt(msg, key)
+    elif op == 'dec':
+      return ecc.decrypt(msg, key)
   return alg
 
 if __name__ == "__main__":

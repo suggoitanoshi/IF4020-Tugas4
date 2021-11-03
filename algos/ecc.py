@@ -1,5 +1,6 @@
 from typing import Tuple
 import random
+import sys
 import tinyec.ec as ec
 import tinyec.registry as reg
 
@@ -9,7 +10,7 @@ def genkey() -> Tuple[dict[str, int], dict[str, int]]:
   c = reg.get_curve("secp192r1") # using a standard curve
   privkey = random.randint(1,c.field.p)
   pubkey = privkey * c.g
-  return ({'priv' : privkey, 'curvename':c.name}, {'x': pubkey.x, 'y':pubkey.y, 'curvename':c.name})
+  return ({'x': pubkey.x, 'y':pubkey.y, 'curvename':c.name}, {'priv' : privkey, 'curvename':c.name})
 
 def gety(a, b, p, x):
   # Hitung y jika diketahui a, b, p, x
@@ -34,28 +35,38 @@ def pickBase(a, b, p):
     y = gety(a, b, p, x)
   return (x, y[0])
 
-def byteToPoint(m, k, a, b, p):
-  # Mengkonversi m = 0-255 menjadi titik pada kurva sesuai k yang disetujui
-  # (Metode Kolbitz)
-  x = m*k + 1
-  y = gety(a, b, p, x)
-  while len(y) == 0:
-    x = x + 1
-    y = gety(a, b, p, x)
+def byteToPoint(m, c):
+  # Mengkonversi m = 0-255 menjadi titik pada kurva
+  return m * c.g
 
-  return (x, y[0]) # not ec.Point yet
-
-def pointToByte(point, k):
+def pointToByte(point, c):
     # Kebalikan dari byteToPoint
-    # point = (x, y)
-    x = point.x
-    return (x-1)//k
+    count = 0
+    temp = count * c.g
+    while point != temp:
+      count = count + 1
+      temp = count * c.g
+    return count
+    
 
 def encodekey(key: Tuple[dict[str, int], dict[str, int]]) -> Tuple[dict[str, str], dict[str, str]]:
-  pass
+  pubkey, privkey = key
+  pubkey['x'] = hex(pubkey['x'])
+  pubkey['y'] = hex(pubkey['y'])
+  pubkey['curvename'] = pubkey['curvename']
+  privkey['curvename'] = privkey['curvename']
+  privkey['priv'] = hex(privkey['priv'])
+  return (pubkey, privkey)
+
 
 def decodekey(key: dict[str, str]) -> dict[str,int]:
-  pass 
+  decoded = {}
+  for k in key.keys():
+    if k == 'curvename':
+      decoded[k] = key[k]
+    else:
+      decoded[k] = int(key[k], 16)
+  return decoded 
 
 def encrypt(message: bytes, key: dict[str, int]) -> bytes:
   # Algoritma Elliptic Curve Elgamal
@@ -65,16 +76,24 @@ def encrypt(message: bytes, key: dict[str, int]) -> bytes:
   c = reg.get_curve(cname)
   pubkey = ec.Point(c,x,y)
   kvalue = random.randint(1,c.field.p)
-
   ciphertext = bytearray()
+  bsize = sys.getsizeof(c.field.p)
 
   # Iterate Message
-  for x in message:
-    msg = byteToPoint(message, 1, c.a, c.b, c.field.p)
+  for i in range(len(message)):
+    msg = byteToPoint(message[i], c)
     first = kvalue * c.g #1st point
     second = msg + (kvalue * pubkey) #2nd point
-    cipherpoint = (first, second)
-    # ubah ke bytes?
+    fx = first.x
+    fy = first.y
+    sx = second.x
+    sy = second.y
+    ciphertext.extend(fx.to_bytes(bsize, byteorder=sys.byteorder, signed=False))
+    ciphertext.extend(fy.to_bytes(bsize, byteorder=sys.byteorder, signed=False))
+    ciphertext.extend(sx.to_bytes(bsize, byteorder=sys.byteorder, signed=False))
+    ciphertext.extend(sy.to_bytes(bsize, byteorder=sys.byteorder, signed=False))
+  
+  return ciphertext
 
 
 def decrypt(message: bytes, key: dict[str,int]) -> bytes:
@@ -82,12 +101,24 @@ def decrypt(message: bytes, key: dict[str,int]) -> bytes:
   privkey = key['priv']
   cname = key['curvename']
   c = reg.get_curve(cname)
+  bsize = sys.getsizeof(c.field.p)
   
   # For every cipherpoint:
   # first = cipherpoint[0] * privkey
   # second = cipherpoint[1] - first
+  plain = []
+  for i in range(0, len(message), 4*bsize):
+    fx = int.from_bytes(message[i:i+bsize], byteorder=sys.byteorder, signed=False)
+    fy = int.from_bytes(message[i+bsize:i+bsize*2], byteorder=sys.byteorder, signed=False)
+    sx = int.from_bytes(message[i+bsize*2:i+bsize*3], byteorder=sys.byteorder, signed=False)
+    sy = int.from_bytes(message[i+bsize*3:i+bsize*4], byteorder=sys.byteorder, signed=False)
+    first = ec.Point(c,fx,fy)
+    second = ec.Point(c,sx,sy)
+    first = privkey * first
+    second = second - first
+    plain.append(pointToByte(second, c))
 
   # Decode back to message
-  # ...
+  return bytearray(plain)
 
 
