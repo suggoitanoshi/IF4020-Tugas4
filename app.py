@@ -17,6 +17,7 @@ def genkey_frontend():
 def genkey():
   alg = request.form['alg']
   bit = request.form['bits']
+  cname = request.form['cname']
   if alg == 'RSA':
     pubkey, privkey = rsa.encodekey(rsa.genkey(int(bit)))
   elif alg == 'EG':
@@ -24,7 +25,7 @@ def genkey():
   elif alg == 'Paillier':
     pubkey, privkey = paillier.encodekey(paillier.genkey())
   else:
-    pubkey, privkey = ecc.encodekey(ecc.genkey())
+    pubkey, privkey = ecc.encodekey(ecc.genkey(cname))
   return {'pubkey': pubkey, 'privkey': privkey}
 
 @app.get('/encryptdecrypt')

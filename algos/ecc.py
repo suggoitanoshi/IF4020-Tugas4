@@ -4,36 +4,13 @@ import sys
 import tinyec.ec as ec
 import tinyec.registry as reg
 
-def genkey() -> Tuple[dict[str, int], dict[str, int]]:
+def genkey(name = "secp192r1") -> Tuple[dict[str, int], dict[str, int]]:
   """Fungsi pembangkit kunci ECC
      y^2 = x^3 + ax + b mod p"""
-  c = reg.get_curve("secp192r1") # using a standard curve
+  c = reg.get_curve(name) # using a standard curve
   privkey = random.randint(1,c.field.p)
   pubkey = privkey * c.g
   return ({'x': pubkey.x, 'y':pubkey.y, 'curvename':c.name}, {'priv' : privkey, 'curvename':c.name})
-
-def gety(a, b, p, x):
-  # Hitung y jika diketahui a, b, p, x
-  # Nilai bisa lebih dari 1
-  # Jika array kosong, tidak ada y yang memenuhi
-  y2 = (x**3 + a*x + b*x)%p
-  y = []
-  for i in range(0, p):
-    temp = (i*i)%p
-    if temp == y2:
-      y.append(i)
-  return y
-
-def pickBase(a, b, p):
-  # Memilih titik random pada kurva
-  x = random.randint(0, p)
-  y = gety(a, b, p, x)
-  while len(y) == 0:
-    x = x + 1
-    if(x > p-1):
-      x = 0
-    y = gety(a, b, p, x)
-  return (x, y[0])
 
 def byteToPoint(m, c):
   # Mengkonversi m = 0-255 menjadi titik pada kurva

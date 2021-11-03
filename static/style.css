@@ -45,7 +45,6 @@ html{
   
 }
 
-
 .btn-key{
   background-color: #BAD9B5;
   margin: auto;
@@ -53,6 +52,10 @@ html{
   margin-left: 5px;
   margin-right: 5px;
   text-align: center;
+}
+
+#curve-name{
+  display: none;
 }
 
 .btn-back{

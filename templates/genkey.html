@@ -28,6 +28,22 @@
           <option value="1024">1024</option>
         </select>
       </label>
+      <label id='curve-name'>Jenis kurva:
+        <select id='curve'>
+          <option value="secp192r1">secp192r1</option>
+          <option value="secp224r1">secp224r1</option>
+          <option value="secp256r1">secp256r1</option>
+          <option value="secp384r1">secp384r1</option>
+          <option value="secp521r1">secp521r1</option>
+          <option value="brainpoolP160r1">brainpoolP160r1</option>
+          <option value="brainpoolP192r1">brainpoolP192r1</option>
+          <option value="brainpoolP224r1">brainpoolP224r1</option>
+          <option value="brainpoolP256r1">brainpoolP256r1</option>
+          <option value="brainpoolP320r1">brainpoolP320r1</option>
+          <option value="brainpoolP384r1">brainpoolP384r1</option>
+          <option value="brainpoolP512r1">brainpoolP512r1</option>
+        </select>
+      </label>
       <button id='submit'>Submit</button>
     </form>
     <a id='pubkey' download='key.pub' hidden><div class='btn-key'>Download Public Key</div></a>
@@ -39,6 +55,7 @@
         const form = new FormData();
         form.append('alg', document.querySelector('#alg').value);
         form.append('bits', document.querySelector('#bits').value);
+        form.append('cname', document.querySelector('#curve').value);
         const response = await fetch('/generatekey', {
           method: 'POST',
           body: form
@@ -62,6 +79,14 @@
         else
         {
           document.getElementById("bits-display").style.display = "none";
+        }
+
+        if(x=='ECC'){
+          document.getElementById("curve-name").style.display = "block";
+        }
+        else
+        {
+          document.getElementById("curve-name").style.display = "none";
         }
       }
     </script>
