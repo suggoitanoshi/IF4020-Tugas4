@@ -31,12 +31,13 @@
         </label>
         <label class='col grow-1'>Key:
           <textarea name='key' id='key'></textarea>
-          <input type='file' accept='.pub,.pri,*/*' name='key-file' id='key-file' multiple=false>
+          <input type='file' accept='.pub' name='key-file' id='key-file' multiple=false>
         </label>
       </div>
       <button id='submit'>Submit</button>
     </form>
-    <a id='result' download='result' hidden>Result</a>
+    <a id='result' download='result' hidden><div class='btn-key'>Result</div></a>
+    <div class='btn-back'><a href='/'><< Back</a></div>
     <script>
       document.querySelector('#submit').addEventListener('click', async e => {
         e.preventDefault();
@@ -76,6 +77,20 @@
         resDOM.hidden = false;
         document.querySelector('#encdecform').reset();
       });
+
+      document.getElementById("op").onchange = function() {changeAcc()};
+
+      function changeAcc() {
+        var x = document.getElementById("op").value;
+        if(x=='enc')
+        {
+          document.getElementById("key-file").accept = ".pub";
+        }
+        else
+        {
+          document.getElementById("key-file").accept = ".pri";
+        }
+      }
     </script>
   </body>
 </html>

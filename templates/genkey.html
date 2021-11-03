@@ -2,13 +2,13 @@
 
 <html>
   <head>
-    <meta name='viewport' content='width=device-width;initial-scale=1'>
+    <meta name='viewport' content='width=device-width,initial-scale=1'>
     <meta charset='utf-8'>
-    <title>Enkripsi/Dekripsi</title>
+    <title>Key Generator</title>
     <link rel='stylesheet' href='{{url_for("static", filename="style.css")}}'>
   </head>
   <body>
-    <h1>Kalkulator Enkripsi/Dekripsi</h1>
+    <h1>Key Generator</h1>
     <form class='enc-form col'>
       <label>Algoritma:
         <select id='alg'>
@@ -30,8 +30,9 @@
       </label>
       <button id='submit'>Submit</button>
     </form>
-    <a id='pubkey' download='key.pub' hidden>Download Public Key</a>
-    <a id='prikey' download='key.pri' hidden>Download Private Key</a>
+    <a id='pubkey' download='key.pub' hidden><div class='btn-key'>Download Public Key</div></a>
+    <a id='prikey' download='key.pri' hidden><div class='btn-key'>Download Private Key</div></a>
+    <div class='btn-back'><a href='/'><< Back</a></div>
     <script>
       document.querySelector('#submit').addEventListener('click', async e => {
         e.preventDefault();
@@ -49,6 +50,20 @@
         pubkeyDownload.hidden = false;
         prikeyDownload.hidden = false;
       });
+
+      document.getElementById("alg").onchange = function() {changeParam()};
+
+      function changeParam() {
+        var x = document.getElementById("alg").value;
+        if(x=='RSA')
+        {
+          document.getElementById("bits-display").style.display = "block";
+        }
+        else
+        {
+          document.getElementById("bits-display").style.display = "none";
+        }
+      }
     </script>
   </body>
 </html>
